@@ -20,6 +20,7 @@ defmodule MrHonyakuWeb.Router do
     pipe_through :browser
 
     post "/callback", BotController, :line_callback
+    get  "/:message_id"  , BotController, :get_image
   end
 
 

@@ -1,6 +1,9 @@
 defmodule MrHonyakuWeb.BotController do
   use MrHonyakuWeb, :controller
 
+  def get_image(conn, %{"message_id" => message_id}) do
+    redirect(conn, to: "/#{message_id}.jpg")
+  end
   def line_callback(conn, %{"events" => events}) do
     %{"message" => message } = List.first(events)
     %{"source" => source } = List.first(events)
@@ -17,7 +20,7 @@ defmodule MrHonyakuWeb.BotController do
         brain_url =  "https://ocr-devday19.linebrain.ai/v1/recognition"
         service_id = "wUjIzhWuLOsDMOU5GMJ2XdMYNCfukH7E"
         data = %{
-          imageURL: ["http://localhost:4000/#{message["id"]}.jpg"],
+          imageURL: ["https://salty-anchorage-80672.herokuapp.com/#{message["id"]}"],
                  entrance: "detection",
                  scaling: false,
                  segments: false
