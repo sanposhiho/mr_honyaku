@@ -10,22 +10,25 @@ defmodule MrHonyakuWeb.BotController do
     json_data =
     case message["type"] do
       "image" ->
-        brain_url =  "https://ocr-devday19.linebrain.ai/v1/recognition"
         image_url = "https://api.line.me/v2/bot/message/#{message["id"]}/content"
+        header = %{"Authorization" => "Bearer ${7qco1iW1oMODOe/GL9HtBqxxaPvayqwpnABfUJ7pgYlp0yCCX6gyAHLwQhIRXk9Yyu2wGMguVX7JmaKjlf9DiAQHF2xtbWbpf35DcR1HSQY/gTBozEyw0IPZMdvWjERc9NuSjvVffB6JxF7URfYkZwdB04t89/1O/w1cDnyilFU=}"}
+        %HTTPoison.Response{body: body} = HTTPoison.get!(image_url, header)
+        File.write!("#{message["id"]}.jpg", body)
+        brain_url =  "https://ocr-devday19.linebrain.ai/v1/recognition"
         service_id = "wUjIzhWuLOsDMOU5GMJ2XdMYNCfukH7E"
         data = %{
-                 imageURL: [image_url],
+          imageURL: ["http://localhost:4000/#{message["id"]}.jpg"],
                  entrance: "detection",
                  scaling: false,
                  segments: false
                }
               |> Poison.encode!
         headers = %{
-                    "Content-Type" => "application/json"
                     "X-ClovaOCR-Service-ID" => service_id,
-                  }[
+                    "Content-Type" => "application/json"
+                  }
         json_data =
-        case HTTPoison.post(brain_uri, data, headers) do
+        case HTTPoison.post(brain_url, data, headers) do
           {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
             IO.puts body
             data = Poison.decode!(data)
@@ -33,8 +36,8 @@ defmodule MrHonyakuWeb.BotController do
             text = Enum.map(words, fn word -> word["text"] end)
             messages = Enum.map(text, fn raw_text ->
               %{
-                raw: raw_text
-                translated: translate(ja, en, raw_text)
+                raw: raw_text,
+                translated: translate("ja", "en", raw_text)
               }
             end)
             |> Enum.map(fn texts ->
@@ -54,18 +57,8 @@ defmodule MrHonyakuWeb.BotController do
                 messages: messages
             } |> Poison.encode!
 
-          {:ok, %HTTPoison.Response{status_code: 404}} ->
-            IO.puts "Not found :("
-            %{replyToken: events["replyToken"],
-                messages: [
-                  %{
-                  type: "text",
-                  text: "エラーが発生しました。もう一度試してください！" # 受信したメッセージをそのまま返す
-                  }
-                ]
-            } |> Poison.encode!
-          {:error, %HTTPoison.Error{reason: reason}} ->
-            IO.inspect reason
+          error ->
+            IO.inspect error
             %{replyToken: events["replyToken"],
                 messages: [
                   %{
