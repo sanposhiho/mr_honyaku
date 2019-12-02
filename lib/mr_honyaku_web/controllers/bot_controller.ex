@@ -2,7 +2,10 @@ defmodule MrHonyakuWeb.BotController do
   use MrHonyakuWeb, :controller
 
   def get_image(conn, %{"message_id" => message_id}) do
-    File.open!("/#{message_id}.jpg")
+    IO.puts("oKKKK")
+    image_url = File.read!("#{message_id}.jpg")
+    IO.puts("oKKKK")
+    send_resp(conn, 200, image_url)
   end
   def line_callback(conn, %{"events" => events}) do
     %{"message" => message } = List.first(events)

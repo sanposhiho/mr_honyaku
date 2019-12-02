@@ -19,8 +19,8 @@ defmodule MrHonyakuWeb.Router do
   scope "/", MrHonyakuWeb do
     pipe_through :browser
 
+    get  "/image/:message_id"  , BotController, :get_image
     post "/callback", BotController, :line_callback
-    get  "/:message_id"  , BotController, :get_image
   end
 
 
