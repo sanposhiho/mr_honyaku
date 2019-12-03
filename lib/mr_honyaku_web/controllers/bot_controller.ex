@@ -2,16 +2,59 @@ defmodule MrHonyakuWeb.BotController do
   use MrHonyakuWeb, :controller
 
   def line_callback(conn, %{"events" => events}) do
-    %{"message" => message } = List.first(events)
-    %{"source" => source } = List.first(events)
+    IO.inspect events
+    event_contents = List.first(events)
+    message = Map.get(event_contents, "message")
+    type = if is_nil(message), do: nil, else: message["type"]
     events = List.first(events)
     endpoint_uri = "https://api.line.me/v2/bot/message/reply"
     line_auth_token = Application.get_env(:mr_honyaku, :line_auth_token)
 
     json_data =
-    case message["type"] do
+    case type do
       "image" ->
-        image_url = "https://api.line.me/v2/bot/message/#{message["id"]}/content"
+        message_id = message["id"]
+        %{"replyToken" => events["replyToken"],
+          "messages" =>
+          [%{
+            "type" => "flex",
+            "altText" => "言語を選択してください。",
+            "contents" => %{
+            "type" => "bubble",
+            "body" => %{
+              "type" => "box",
+              "layout" => "vertical",
+              "spacing" => "md",
+              "contents" => [
+                %{
+                  "type" => "button",
+                  "style" => "secondary",
+                  "action" => %{
+                    "type" => "postback",
+                    "label" => "日本語→英語",
+                    "displayText" => "日本語を英語に翻訳",
+                    "data" => "en&"<>message_id
+                  }
+                },
+                %{
+                  "type" => "button",
+                  "style" => "secondary",
+                  "action" => %{
+                    "type" => "postback",
+                    "label" => "英語→日本語",
+                    "displayText" => "英語を日本語に翻訳",
+                    "data" => "ja&"<>message_id
+                  }
+                }
+              ]
+            }
+            }}]}|>Poison.encode!
+      _ ->
+        if Map.has_key?(event_contents, "postback") do
+        reply_contents = event_contents["postback"]["data"]
+        target = String.slice(reply_contents, 0..1)
+        message_id = String.slice(reply_contents, 3..-1)
+        image_url = "https://api.line.me/v2/bot/message/#{message_id}/content"
         header = %{"Authorization" => "Bearer ${#{line_auth_token}}"}
         %HTTPoison.Response{body: body} = HTTPoison.get!(image_url, header)
         image = body |> Base.encode64()
@@ -36,7 +79,7 @@ defmodule MrHonyakuWeb.BotController do
             text = Enum.map(words, fn word -> word["text"] end)
             raw_text = Enum.join(text, " ")
             messages =
-              case translate("en", "ja", raw_text) do
+              case translate("hoge", target, raw_text) do
                 {:ok, translated} ->
                   %{
                     raw: raw_text,
@@ -76,7 +119,8 @@ defmodule MrHonyakuWeb.BotController do
             } |> Poison.encode!
         end
 
-      _ ->%{
+      else
+        %{
             replyToken: events["replyToken"],
             messages: [
               %{
@@ -85,8 +129,8 @@ defmodule MrHonyakuWeb.BotController do
               }
             ]
           } |> Poison.encode!
+      end
     end
-
 
     headers = %{
       "Content-Type" => "application/json",
