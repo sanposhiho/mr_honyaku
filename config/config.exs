@@ -25,7 +25,11 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :mr_honyaku, :line_auth_token, "7qco1iW1oMODOe/GL9HtBqxxaPvayqwpnABfUJ7pgYlp0yCCX6gyAHLwQhIRXk9Yyu2wGMguVX7JmaKjlf9DiAQHF2xtbWbpf35DcR1HSQY/gTBozEyw0IPZMdvWjERc9NuSjvVffB6JxF7URfYkZwdB04t89/1O/w1cDnyilFU="
+config :mr_honyaku, :brain_service_id, "wUjIzhWuLOsDMOU5GMJ2XdMYNCfukH7E"
+config :mr_honyaku, :translation_auth, "5b51f2253b1841e9bd4541d33131d4db"
+
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "dev.exs"
 import_config "#{Mix.env}.exs"
