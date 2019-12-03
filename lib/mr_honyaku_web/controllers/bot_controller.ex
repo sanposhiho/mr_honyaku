@@ -36,7 +36,7 @@ defmodule MrHonyakuWeb.BotController do
             text = Enum.map(words, fn word -> word["text"] end)
             raw_text = Enum.join(text)
             messages =
-              case translate("ja", "en", raw_text) do
+              case translate("en", "ja", raw_text) do
                 {:ok, translated} ->
                   %{
                     raw: raw_text,
@@ -70,7 +70,7 @@ defmodule MrHonyakuWeb.BotController do
                 messages: [
                   %{
                   type: "text",
-                  text: "エラーが発生しました。もう一度試してください！" # 受信したメッセージをそのまま返す
+                  text: "エラーが発生しました。もう一度試してください！"
                   }
                 ]
             } |> Poison.encode!
