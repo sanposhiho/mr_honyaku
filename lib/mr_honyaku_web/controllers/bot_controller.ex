@@ -79,8 +79,8 @@ defmodule MrHonyakuWeb.BotController do
             text = Enum.map(words, fn word -> word["text"] end)
             raw_text =
               case target do
-                "en" -> Enum.join(text, " ")
-                "ja" -> Enum.join(text, "")
+                "ja" -> Enum.join(text, " ")
+                "en" -> Enum.join(text, "")
               end
             messages =
               case translate("hoge", target, raw_text) do
