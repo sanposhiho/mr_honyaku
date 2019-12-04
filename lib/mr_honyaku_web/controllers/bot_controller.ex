@@ -77,7 +77,11 @@ defmodule MrHonyakuWeb.BotController do
             image_data = Poison.decode!(body)
             words = image_data["words"]
             text = Enum.map(words, fn word -> word["text"] end)
-            raw_text = Enum.join(text, " ")
+            raw_text =
+              case target do
+                "en" -> Enum.join(text, " ")
+                "ja" -> Enum.join(text, "")
+              end
             messages =
               case translate("hoge", target, raw_text) do
                 {:ok, translated} ->
